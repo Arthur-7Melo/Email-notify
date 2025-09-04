@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Email {
+  id          Int      @id @default(autoincrement())
+  to          String
+  subject     String
+  content     String
+  status      EmailStatus @default(PENDING)
+  webhookUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
