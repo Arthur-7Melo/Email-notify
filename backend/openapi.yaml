@@ -34,6 +34,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /emails/{id}:
+    get:
+      summary: Busca um e-mail específico pelo ID
+      tags:
+        - Emails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do e-mail
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: E-mail encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailResponse'
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /health:
     get:
       summary: Verifica a saúde do serviço
@@ -78,6 +105,44 @@ components:
         message:
           type: string
           example: E-mail aceito para processamento
+        emailId:
+          type: integer
+          example: 1
+        queued:
+          type: boolean
+          example: true
+
+    EmailResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        to:
+          type: string
+          example: destinatario@exemplo.com
+        subject:
+          type: string
+          example: Assunto do e-mail
+        content:
+          type: string
+          example: Conteúdo do e-mail
+        status:
+          type: string
+          enum: [PENDING, SENT, FAILED]
+          example: SENT
+        webhookUrl:
+          type: string
+          nullable: true
+          example: https://webhook.site/your-unique-url
+        createdAt:
+          type: string
+          format: date-time
+          example: 2023-01-01T12:00:00Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2023-01-01T12:05:00Z
 
     HealthResponse:
       type: object
@@ -88,6 +153,7 @@ components:
         timestamp:
           type: string
           format: date-time
+          example: 2023-01-01T12:00:00Z
         services:
           type: object
           properties:
