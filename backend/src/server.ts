@@ -6,15 +6,16 @@ import { receiveEmail } from './controllers/emailController';
 import { PORT } from './config';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
+import emailRouter from '../src/routes/index'
 
 const app = express();
 app.use(express.json());
-app.use(cors())
-
-app.post('/email', receiveEmail);
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Email service is running' });
-});
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(emailRouter);
 
 const swaggerDocument = YAML.load('./openapi.yaml');
 app.use(
