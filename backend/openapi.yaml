@@ -1,0 +1,111 @@
+openapi: 3.0.0
+info:
+  title: Email Service API
+  version: 1.0.0
+  description: API para envio assíncrono de e-mails com filas RabbitMQ
+
+servers:
+  - url: http://localhost:3333
+    description: Servidor de desenvolvimento
+
+paths:
+  /email:
+    post:
+      summary: Envia um e-mail para processamento assíncrono
+      tags:
+        - Emails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+      responses:
+        '202':
+          description: E-mail aceito para processamento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      summary: Verifica a saúde do serviço
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Serviço está funcionando corretamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  schemas:
+    EmailRequest:
+      type: object
+      required:
+        - to
+        - subject
+        - content
+      properties:
+        to:
+          type: string
+          format: email
+          example: destinatario@exemplo.com
+        subject:
+          type: string
+          example: Assunto do e-mail
+        content:
+          type: string
+          example: Conteúdo do e-mail
+        webhookUrl:
+          type: string
+          format: uri
+          example: https://webhook.site/your-unique-url
+          nullable: true
+
+    AcceptedResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: E-mail aceito para processamento
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: OK
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          properties:
+            database:
+              type: boolean
+              example: true
+            rabbitmq:
+              type: boolean
+              example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Dados inválidos
+        details:
+          type: array
+          items:
+            type: string
+          example: ["Campo 'to' é obrigatório"]
