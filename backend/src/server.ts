@@ -1,15 +1,30 @@
 import express from 'express'
-import dotenv from 'dotenv';
+import cors from 'cors'
+import { connectRabbitMQ } from './queues/rabbitmq';
+import { startEmailConsumer } from './queues/emailConsumer';
+import { receiveEmail } from './controllers/emailController';
+import { PORT } from './config';
 
 const app = express();
 app.use(express.json());
-dotenv.config();
+app.use(cors())
 
-app.get('/', (_req, res) => {
-  res.send({ message: 'API rodando!' });
+app.post('/email', receiveEmail);
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Email service is running' });
 });
 
-const PORT = process.env.PORT || 3333;
-app.listen(PORT, () => {
-  console.log(`⚡ Server rodando em: ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectRabbitMQ();
+    await startEmailConsumer();
+    app.listen(PORT, () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Falha ao iniciar servidor:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
