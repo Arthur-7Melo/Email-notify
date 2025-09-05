@@ -17,21 +17,18 @@ export const sendEmail = async (emailData: {
   subject: string;
   content: string;
   webhookUrl?: string;
+  emailId: number;
 }) => {
-  const { to, subject, content, webhookUrl } = emailData;
-
-  let emailRecord;
+  const { to, subject, content, webhookUrl, emailId } = emailData;
 
   try {
-    emailRecord = await prisma.email.create({
-      data: {
-        to,
-        subject,
-        content,
-        webhookUrl,
-        status: 'PENDING'
-      }
+    let emailRecord = await prisma.email.findUnique({
+      where: { id: emailId }
     });
+
+    if (!emailRecord) {
+      throw new Error(`Email com ID ${emailId} não encontrado`);
+    }
 
     const info = await transporter.sendMail({
       from: '"Email Service" <noreply@example.com>',
@@ -57,19 +54,17 @@ export const sendEmail = async (emailData: {
   } catch (error) {
     console.error('Erro ao enviar email:', error);
 
-    if (emailRecord) {
-      await prisma.email.update({
-        where: { id: emailRecord.id },
-        data: { status: 'FAILED' }
-      });
+    await prisma.email.update({
+      where: { id: emailId },
+      data: { status: 'FAILED' }
+    });
 
-      if (webhookUrl) {
-        await notifyWebhook(webhookUrl, {
-          emailId: emailRecord.id,
-          status: 'FAILED',
-          error: error instanceof Error ? error.message : 'Erro desconhecido'
-        });
-      }
+    if (webhookUrl) {
+      await notifyWebhook(webhookUrl, {
+        emailId: emailId,
+        status: 'FAILED',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
     }
 
     throw error;
