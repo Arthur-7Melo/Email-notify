@@ -1,13 +1,14 @@
 import nodemailer from 'nodemailer';
 import prisma from '../utils/db';
 import { notifyWebhook } from './webhookService';
+import { SMTP_USER, SMTP_PASSWORD } from '../config';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.ethereal.email',
   port: 587,
   auth: {
-    user: 'george2@ethereal.email',
-    pass: 'rnhF6u6nThnKqDV1hf'
+    user: SMTP_USER,
+    pass: SMTP_PASSWORD
   }
 });
 
