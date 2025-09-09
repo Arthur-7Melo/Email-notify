@@ -5,7 +5,7 @@ import { startEmailConsumer, startFailedEmailConsumer } from './queues/emailCons
 import { PORT } from './config';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
-import emailRouter from '../src/routes/index'
+import emailRouter from './routes/index'
 
 const app = express();
 app.use(express.json());
