@@ -1,8 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { connectRabbitMQ } from './queues/rabbitmq';
-import { startEmailConsumer } from './queues/emailConsumer';
-import { receiveEmail } from './controllers/emailController';
+import { startEmailConsumer, startFailedEmailConsumer } from './queues/emailConsumer';
 import { PORT } from './config';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
@@ -28,6 +27,7 @@ const startServer = async () => {
   try {
     await connectRabbitMQ();
     await startEmailConsumer();
+    await startFailedEmailConsumer();
     app.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
     });

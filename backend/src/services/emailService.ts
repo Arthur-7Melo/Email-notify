@@ -54,17 +54,25 @@ export const sendEmail = async (emailData: {
   } catch (error) {
     console.error('Erro ao enviar email:', error);
 
-    await prisma.email.update({
-      where: { id: emailId },
-      data: { status: 'FAILED' }
+    const currentRecord = await prisma.email.findUnique({
+      where: { id: emailId }
     });
 
-    if (webhookUrl) {
-      await notifyWebhook(webhookUrl, {
-        emailId: emailId,
-        status: 'FAILED',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+    if (currentRecord && currentRecord.status === 'PENDING') {
+      await prisma.email.update({
+        where: { id: emailId },
+        data: { status: 'FAILED' }
       });
+
+      if (webhookUrl) {
+        await notifyWebhook(webhookUrl, {
+          emailId: emailId,
+          status: 'FAILED',
+          error: error instanceof Error ? error.message : 'Erro desconhecido'
+        });
+      }
+    } else {
+      console.log(`Email ${emailId} já possui status final: ${currentRecord?.status}`);
     }
 
     throw error;
